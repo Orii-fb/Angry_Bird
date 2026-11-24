@@ -1,20 +1,10 @@
 #ifndef SIEGE_LAB_CORE_CAMERA_CONTROLLER_H_
 #define SIEGE_LAB_CORE_CAMERA_CONTROLLER_H_
 
-#include "raylib.h"
+#include "game_input.h"
 
 namespace siege_lab
 {
-
-struct InputSnapshot
-{
-  bool orbit_button_down = false;
-  Vector2 mouse_delta{0.0f, 0.0f};
-  float mouse_wheel = 0.0f;
-  int yaw_axis = 0;
-  int pitch_axis = 0;
-  int zoom_axis = 0;
-};
 
 class ICameraController
 {

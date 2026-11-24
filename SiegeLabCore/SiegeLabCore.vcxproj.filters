@@ -19,6 +19,9 @@
     <ClInclude Include="game_controller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="game_input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="game_entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -26,6 +29,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="input_controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="launcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="orbit_camera.h">
@@ -43,6 +49,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="input_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="launcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="orbit_camera.cpp">

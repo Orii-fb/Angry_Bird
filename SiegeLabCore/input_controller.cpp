@@ -23,6 +23,11 @@ InputSnapshot InputController::Capture() const
   input.yaw_axis = ReadAxis(KEY_RIGHT, KEY_LEFT);
   input.pitch_axis = ReadAxis(KEY_UP, KEY_DOWN);
   input.zoom_axis = ReadAxis(KEY_KP_ADD, KEY_KP_SUBTRACT);
+  input.launcher_yaw_axis = ReadAxis(KEY_D, KEY_A);
+  input.launcher_pitch_axis = ReadAxis(KEY_W, KEY_S);
+  input.launcher_speed_axis = ReadAxis(KEY_E, KEY_Q);
+  input.standard_projectile_pressed = IsKeyPressed(KEY_ONE);
+  input.heavy_projectile_pressed = IsKeyPressed(KEY_TWO);
   return input;
 }
 
