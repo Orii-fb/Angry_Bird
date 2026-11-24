@@ -19,6 +19,7 @@ struct InputSnapshot
   int launcher_speed_axis = 0;
   bool standard_projectile_pressed = false;
   bool heavy_projectile_pressed = false;
+  bool fire_pressed = false;
 };
 
 }  // namespace siege_lab

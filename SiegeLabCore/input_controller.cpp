@@ -28,6 +28,7 @@ InputSnapshot InputController::Capture() const
   input.launcher_speed_axis = ReadAxis(KEY_E, KEY_Q);
   input.standard_projectile_pressed = IsKeyPressed(KEY_ONE);
   input.heavy_projectile_pressed = IsKeyPressed(KEY_TWO);
+  input.fire_pressed = IsKeyPressed(KEY_SPACE);
   return input;
 }
 

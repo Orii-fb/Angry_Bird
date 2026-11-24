@@ -31,6 +31,10 @@ class TestEntity : public GameEntity
   {
   }
 
+  void RegisterPhysics() override
+  {
+  }
+
   int value;
   int* destruction_count;
 };

@@ -53,3 +53,30 @@ affiché le lanceur et un repère de visée dans la scène ; le déplacement de 
 caméra ne change pas cette direction. Les sept tests du lanceur ont d’abord
 échoué avec le squelette, puis passent après l’implémentation. Les 26 tests
 passent maintenant en Debug et en Release.
+
+## Étape 5 — Projectile Cyclone
+
+J’ai remplacé la sphère provisoire par un vrai projectile avec son `RigidBody`
+Cyclone et sa `CollisionSphere`. Le profil standard pèse 1 kg avec un rayon de
+0,28 m, et le lourd 2 kg avec un rayon de 0,36 m. Chaque projectile a aussi son
+inertie, son amortissement et la gravité. La barre d’espace lance le projectile
+choisi avec la vitesse réglée au lanceur ; c’est une pression, donc la garder
+enfoncée ne crée pas une suite de tirs.
+
+J’ai ajouté une boucle physique Cyclone temporaire à pas fixe de 1/60 s. Elle
+intègre le corps, détecte le contact avec le sol puis le résout avec Cyclone.
+La sphère dessinée suit directement la position du corps. Les tests vérifient
+les deux profils, la vitesse initiale et le contact avec le plan. Les 30 tests
+passent en Debug et en Release.
+
+## Étape 6 — Aperçu de trajectoire Cyclone
+
+J’ai ajouté un aperçu vert qui suit la visée actuelle du lanceur. Il est calculé
+avec un corps Cyclone temporaire, au même pas fixe que le tir, et s’arrête au
+premier contact détecté avec le sol ou une boîte. La prédiction garde une copie
+des formes statiques fournies; elle ne fait pas avancer le projectile réel et
+ne résout pas de rebond. Pour l’instant, comme la scène n’a pas encore ses
+obstacles de niveau, l’aperçu montre le contact avec le sol. Les quatre tests
+couvrent le contact au sol, le contact avec une boîte, la limite de calcul et
+la différence de rayon entre les projectiles. Les 34 tests passent en Debug
+et en Release.
