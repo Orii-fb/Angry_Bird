@@ -14,3 +14,19 @@ Pour vérifier que tout fonctionnait, j’ai mis une première fenêtre raylib a
 le nom du jeu, et un petit test qui vérifie que `2 + 3` donne `5`. J’ai
 compilé le projet en Debug et en Release, puis lancé le test dans les deux
 versions. Tout a réussi.
+
+## Étape 2 — Pool d’objets générique
+
+J’ai ajouté un `ObjectPool` à capacité fixe, sans dépendance au moteur
+physique ni à raylib. Chaque objet reçoit un identifiant avec un numéro de
+génération : si un emplacement est libéré puis réutilisé, l’ancien identifiant
+ne permet pas d’accéder au nouvel objet. Le pool permet aussi de parcourir les
+objets actifs et de les supprimer ou de tout vider.
+
+J’ai aussi ajouté `GameEntity` et `SceneObjects` pour stocker des entités
+polymorphes dans ce pool. La création est limitée aux classes concrètes qui
+hérent de `GameEntity`. J’ai d’abord lancé les tests et vérifié qu’ils
+échouaient, puis j’ai ajouté le code nécessaire pour les faire réussir. Les
+tests couvrent la création, la capacité, la réutilisation, la stabilité des
+adresses, les anciens identifiants et la destruction des objets. Les neuf
+tests passent en Debug et en Release.

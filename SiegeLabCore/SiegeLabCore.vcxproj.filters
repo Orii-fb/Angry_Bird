@@ -13,6 +13,15 @@
     <ClInclude Include="game_controller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="game_entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="object_pool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scene_objects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_controller.cpp">

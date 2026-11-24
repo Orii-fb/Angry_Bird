@@ -10,5 +10,11 @@
     <ClCompile Include="smoke_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="object_pool_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scene_objects_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

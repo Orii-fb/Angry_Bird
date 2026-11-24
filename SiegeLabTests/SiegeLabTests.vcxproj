@@ -97,6 +97,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="smoke_test.cpp" />
+    <ClCompile Include="object_pool_test.cpp" />
+    <ClCompile Include="scene_objects_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cyclone\Cyclone.vcxproj">
