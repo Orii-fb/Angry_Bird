@@ -143,9 +143,6 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +152,9 @@
     <ProjectReference Include="..\SiegeLabCore\SiegeLabCore.vcxproj">
       <Project>{c034a437-ebea-479c-aa26-67f6f45dbca7}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
