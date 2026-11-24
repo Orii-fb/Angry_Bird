@@ -30,3 +30,13 @@ hérent de `GameEntity`. J’ai d’abord lancé les tests et vérifié qu’ils
 tests couvrent la création, la capacité, la réutilisation, la stabilité des
 adresses, les anciens identifiants et la destruction des objets. Les neuf
 tests passent en Debug et en Release.
+
+## Étape 3 — Caméra orbitale
+
+J’ai ajouté une caméra qui tourne autour d’un point fixe sans influencer
+l’orientation du lanceur. Le clic droit avec déplacement de la souris fait
+tourner la vue, la molette règle le zoom, et les flèches ainsi que le pavé
+numérique permettent de la déplacer aussi au clavier. L’inclinaison et la
+distance sont limitées pour garder une vue utilisable. `CameraManager` peut
+changer de contrôleur par son interface, sans dépendre directement de la
+caméra orbitale. Les dix nouveaux tests passent en Debug et en Release.

@@ -55,7 +55,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\SiegeLabCore;..\Cyclone\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\SiegeLabCore;..\Cyclone\include;..\packages\raylib.6.2.0\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -84,7 +84,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\SiegeLabCore;..\Cyclone\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\SiegeLabCore;..\Cyclone\include;..\packages\raylib.6.2.0\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -99,6 +99,7 @@
     <ClCompile Include="smoke_test.cpp" />
     <ClCompile Include="object_pool_test.cpp" />
     <ClCompile Include="scene_objects_test.cpp" />
+    <ClCompile Include="orbit_camera_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cyclone\Cyclone.vcxproj">

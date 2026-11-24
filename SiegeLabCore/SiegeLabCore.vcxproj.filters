@@ -10,6 +10,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera_controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="game_controller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -19,12 +25,27 @@
     <ClInclude Include="object_pool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="input_controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="orbit_camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="scene_objects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="camera_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="game_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="input_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="orbit_camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
