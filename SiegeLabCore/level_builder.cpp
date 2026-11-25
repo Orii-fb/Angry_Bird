@@ -1,8 +1,7 @@
 #include "level_builder.h"
 
 #include <array>
-
-#include <cyclone/contacts.h>
+#include <limits>
 
 namespace siege_lab
 {
@@ -10,101 +9,8 @@ namespace siege_lab
 namespace
 {
 
-constexpr cyclone::real kGroundFriction = 0.5;
-constexpr cyclone::real kRestitution = 0.0;
-constexpr unsigned kSolverIterations = 100;
-constexpr unsigned kMaximumContacts = 32;
-
-void ConfigureCollisionData(
-    cyclone::CollisionData& _data,
-    std::array<cyclone::Contact, kMaximumContacts>& _contacts)
-{
-  _data.contactArray = _contacts.data();
-  _data.friction = kGroundFriction;
-  _data.restitution = kRestitution;
-  _data.tolerance = 0.01;
-  _data.reset(kMaximumContacts);
-}
-
-void AddGroundContacts(
-    const cyclone::CollisionBox& _box, cyclone::CollisionData& _data)
-{
-  cyclone::CollisionPlane ground;
-  ground.direction = cyclone::Vector3(0.0, 1.0, 0.0);
-  ground.offset = 0.0;
-  cyclone::CollisionDetector::boxAndHalfSpace(_box, ground, &_data);
-}
-
-void AddBlockContacts(
-    Block& _pillar, Block& _cube, cyclone::CollisionData& _data)
-{
-  cyclone::CollisionDetector::boxAndBox(
-      _pillar.Collider(), _cube.Collider(), &_data);
-}
-
-void AddProjectileContacts(
-    Projectile* _projectile, Block& _pillar, Block& _cube,
-    cyclone::CollisionData& _data)
-{
-  if (_projectile == nullptr)
-  {
-    return;
-  }
-  cyclone::CollisionPlane ground;
-  ground.direction = cyclone::Vector3(0.0, 1.0, 0.0);
-  ground.offset = 0.0;
-  cyclone::CollisionDetector::sphereAndHalfSpace(
-      _projectile->Collider(), ground, &_data);
-  cyclone::CollisionDetector::boxAndSphere(
-      _pillar.Collider(), _projectile->Collider(), &_data);
-  cyclone::CollisionDetector::boxAndSphere(
-      _cube.Collider(), _projectile->Collider(), &_data);
-}
-
-void IntegrateProjectile(Projectile* _projectile, float _delta_time)
-{
-  if (_projectile == nullptr)
-  {
-    return;
-  }
-  _projectile->Body().integrate(_delta_time);
-  _projectile->RegisterPhysics();
-}
-
-void IntegrateEntities(
-    SceneObjects<2>& _entities, float _delta_time)
-{
-  _entities.ForEach([_delta_time](EntityId, GameEntity& _entity) {
-    _entity.Body().integrate(_delta_time);
-    _entity.RegisterPhysics();
-  });
-}
-
-void ResolveWorldContacts(
-    Block& _pillar, Block& _cube, Projectile* _projectile,
-    float _delta_time)
-{
-  std::array<cyclone::Contact, kMaximumContacts> contacts;
-  cyclone::CollisionData data;
-  ConfigureCollisionData(data, contacts);
-  AddGroundContacts(_pillar.Collider(), data);
-  AddGroundContacts(_cube.Collider(), data);
-  AddBlockContacts(_pillar, _cube, data);
-  AddProjectileContacts(_projectile, _pillar, _cube, data);
-
-  if (data.contactCount == 0)
-  {
-    return;
-  }
-  cyclone::ContactResolver resolver(kSolverIterations);
-  resolver.resolveContacts(contacts.data(), data.contactCount, _delta_time);
-  _pillar.RegisterPhysics();
-  _cube.RegisterPhysics();
-  if (_projectile != nullptr)
-  {
-    _projectile->RegisterPhysics();
-  }
-}
+constexpr EntityId kProjectileEntityId{
+    std::numeric_limits<std::size_t>::max() - 1, 1};
 
 void DrawEntities(const SceneObjects<2>& _entities)
 {
@@ -134,24 +40,118 @@ TrajectoryBox CreateTrajectoryBox(const Block& _block)
 
 bool LevelBuilder::BuildPillarCube()
 {
+  UnregisterCurrentEntities();
   m_entities.Clear();
   m_pillar_id = m_entities.CreateEntity<PillarBlock>();
   m_cube_id = m_entities.CreateEntity<CubeBlock>();
-  return m_pillar_id.has_value() && m_cube_id.has_value();
+  if (!m_pillar_id.has_value() || !m_cube_id.has_value())
+  {
+    return false;
+  }
+  return RegisterCurrentEntities();
 }
 
-void LevelBuilder::Step(float _delta_time, Projectile* _projectile)
+void LevelBuilder::UnregisterCurrentEntities()
 {
+  if (m_pillar_id.has_value())
+  {
+    m_physics_world.UnregisterObject(*m_pillar_id);
+  }
+  if (m_cube_id.has_value())
+  {
+    m_physics_world.UnregisterObject(*m_cube_id);
+  }
+}
+
+bool LevelBuilder::RegisterCurrentEntities()
+{
+  if (!m_ground_registered)
+  {
+    m_ground_registered = m_physics_world.RegisterPlane(m_ground_plane);
+  }
   Block* pillar = Pillar();
   Block* cube = Cube();
-  if (pillar == nullptr || cube == nullptr)
-  {
-    return;
-  }
+  return m_ground_registered &&
+         m_physics_world.RegisterBox(
+             *m_pillar_id, pillar->Body(), pillar->Collider()) &&
+         m_physics_world.RegisterBox(
+             *m_cube_id, cube->Body(), cube->Collider());
+}
 
-  IntegrateEntities(m_entities, _delta_time);
-  IntegrateProjectile(_projectile, _delta_time);
-  ResolveWorldContacts(*pillar, *cube, _projectile, _delta_time);
+bool LevelBuilder::Step(float _delta_time, Projectile* _projectile)
+{
+  if (!HasBlocks())
+  {
+    FlushQueuedEntities();
+    return true;
+  }
+  if (!RegisterProjectile(_projectile))
+  {
+    FlushQueuedEntities();
+    return false;
+  }
+  const bool complete = m_physics_world.Step(_delta_time);
+  UnregisterProjectile(_projectile);
+  FlushQueuedEntities();
+  return complete;
+}
+
+bool LevelBuilder::HasBlocks() const
+{
+  return Pillar() != nullptr && Cube() != nullptr;
+}
+
+bool LevelBuilder::RegisterProjectile(Projectile* _projectile)
+{
+  return _projectile == nullptr ||
+         m_physics_world.RegisterSphere(
+             kProjectileEntityId, _projectile->Body(),
+             _projectile->Collider());
+}
+
+void LevelBuilder::UnregisterProjectile(Projectile* _projectile)
+{
+  if (_projectile != nullptr)
+  {
+    m_physics_world.UnregisterObject(kProjectileEntityId);
+  }
+}
+
+bool LevelBuilder::QueueRemoval(EntityId _id)
+{
+  return m_entities.QueueDestroy(_id);
+}
+
+void LevelBuilder::ClearCollisionHistory()
+{
+  m_physics_world.ClearCollisionHistory();
+}
+
+void LevelBuilder::FlushQueuedEntities()
+{
+  m_entities.FlushRemovals([this](EntityId _id) {
+    m_physics_world.UnregisterObject(_id);
+    if (m_pillar_id == _id)
+    {
+      m_pillar_id.reset();
+    }
+    if (m_cube_id == _id)
+    {
+      m_cube_id.reset();
+    }
+  });
+}
+
+CollisionEventDispatcher::ListenerId LevelBuilder::Subscribe(
+    ICollisionListener& _listener)
+{
+  return m_physics_world.Subscribe(_listener);
+}
+
+bool LevelBuilder::Unsubscribe(
+    CollisionEventDispatcher::ListenerId _listener_id)
+{
+  return m_physics_world.Unsubscribe(_listener_id);
 }
 
 void LevelBuilder::Draw() const

@@ -27,6 +27,11 @@ void Contact::setBodyData(RigidBody* one, RigidBody *two,
     Contact::restitution = restitution;
 }
 
+real Contact::getClosingSpeed() const
+{
+    return -contactVelocity.x;
+}
+
 void Contact::matchAwakeState()
 {
     // Collisions with the world never cause a body to wake up.
@@ -545,6 +550,13 @@ void ContactResolver::setEpsilon(real velocityEpsilon,
     ContactResolver::positionEpsilon = positionEpsilon;
 }
 
+void ContactResolver::setPreparedContactObserver(
+    PreparedContactObserver observer, void* userData)
+{
+    preparedContactObserver = observer;
+    preparedContactObserverData = userData;
+}
+
 void ContactResolver::resolveContacts(Contact *contacts,
                                       unsigned numContacts,
                                       real duration)
@@ -555,6 +567,11 @@ void ContactResolver::resolveContacts(Contact *contacts,
 
     // Prepare the contacts for processing
     prepareContacts(contacts, numContacts, duration);
+    if (preparedContactObserver)
+    {
+        preparedContactObserver(
+            contacts, numContacts, preparedContactObserverData);
+    }
 
     // Resolve the interpenetration problems with the contacts.
     adjustPositions(contacts, numContacts, duration);

@@ -105,6 +105,8 @@
     <ClCompile Include="projectile_test.cpp" />
     <ClCompile Include="trajectory_predictor_test.cpp" />
     <ClCompile Include="level_builder_test.cpp" />
+    <ClCompile Include="physics_world_test.cpp" />
+    <ClCompile Include="collision_events_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cyclone\Cyclone.vcxproj">

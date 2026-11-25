@@ -1,6 +1,7 @@
 #ifndef SIEGE_LAB_CORE_SCENE_OBJECTS_H_
 #define SIEGE_LAB_CORE_SCENE_OBJECTS_H_
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -8,6 +9,7 @@
 #include <optional>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "game_entity.h"
 #include "object_pool.h"
@@ -43,9 +45,50 @@ class SceneObjects
     return entity == nullptr ? nullptr : entity->get();
   }
 
+  bool Contains(const GameEntity* _entity) const
+  {
+    bool found = false;
+    ForEach([_entity, &found](EntityId, const GameEntity& _candidate) {
+      found = found || &_candidate == _entity;
+    });
+    return found;
+  }
+
   bool Destroy(EntityId _id)
   {
+    RemovePending(_id);
     return m_entities.Destroy(_id);
+  }
+
+  bool QueueDestroy(EntityId _id)
+  {
+    if (Get(_id) == nullptr)
+    {
+      return false;
+    }
+    if (std::find(m_pending_removals.begin(), m_pending_removals.end(), _id) ==
+        m_pending_removals.end())
+    {
+      m_pending_removals.push_back(_id);
+    }
+    return true;
+  }
+
+  void FlushRemovals()
+  {
+    FlushRemovals([](EntityId) {});
+  }
+
+  template <typename FunctionType>
+  void FlushRemovals(FunctionType&& _before_destroy)
+  {
+    std::vector<EntityId> removals;
+    removals.swap(m_pending_removals);
+    for (EntityId id : removals)
+    {
+      std::invoke(_before_destroy, id);
+      m_entities.Destroy(id);
+    }
   }
 
   template <typename FunctionType>
@@ -69,11 +112,20 @@ class SceneObjects
 
   void Clear()
   {
+    m_pending_removals.clear();
     m_entities.Clear();
   }
 
  private:
+  void RemovePending(EntityId _id)
+  {
+    m_pending_removals.erase(
+        std::remove(m_pending_removals.begin(), m_pending_removals.end(), _id),
+        m_pending_removals.end());
+  }
+
   ObjectPool<std::unique_ptr<GameEntity>, Capacity> m_entities;
+  std::vector<EntityId> m_pending_removals;
 };
 
 }  // namespace siege_lab

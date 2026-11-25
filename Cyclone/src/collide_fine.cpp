@@ -694,7 +694,11 @@ unsigned CollisionDetector::boxAndHalfSpace(
             // Move onto the next contact
             contact++;
             contactsUsed++;
-            if (contactsUsed == (unsigned)data->contactsLeft) return contactsUsed;
+            if (contactsUsed == (unsigned)data->contactsLeft)
+            {
+                data->addContacts(contactsUsed);
+                return contactsUsed;
+            }
         }
     }
 

@@ -101,6 +101,11 @@ namespace cyclone {
         real penetration;
 
         /**
+         * Returns the signed closing speed prepared by the resolver.
+         */
+        real getClosingSpeed() const;
+
+        /**
          * Sets the data that doesn't normally depend on the position
          * of the contact (i.e. the bodies, and their material properties).
          */
@@ -268,6 +273,10 @@ namespace cyclone {
      */
     class ContactResolver
     {
+    public:
+        using PreparedContactObserver =
+            void (*)(const Contact*, unsigned, void*);
+
     protected:
         /**
          * Holds the number of iterations to perform when resolving
@@ -313,12 +322,22 @@ namespace cyclone {
         unsigned positionIterationsUsed;
 
     private:
+        PreparedContactObserver preparedContactObserver = nullptr;
+        void* preparedContactObserverData = nullptr;
+
         /**
          * Keeps track of whether the internal settings are valid.
          */
         bool validSettings;
 
     public:
+        /**
+         * Sets an observer called after contacts are prepared and before
+         * their positions or velocities are changed.
+         */
+        void setPreparedContactObserver(
+            PreparedContactObserver observer, void* userData);
+
         /**
          * Creates a new contact resolver with the given number of iterations
          * per resolution call, and optional epsilon values.

@@ -146,6 +146,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="collision_events.h" />
     <ClInclude Include="block.h" />
     <ClInclude Include="camera_controller.h" />
     <ClInclude Include="camera_manager.h" />
@@ -155,10 +156,12 @@
     <ClInclude Include="launcher.h" />
     <ClInclude Include="level_builder.h" />
     <ClInclude Include="orbit_camera.h" />
+    <ClInclude Include="physics_world.h" />
     <ClInclude Include="projectile.h" />
     <ClInclude Include="trajectory_predictor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="collision_events.cpp" />
     <ClCompile Include="block.cpp" />
     <ClCompile Include="camera_manager.cpp" />
     <ClCompile Include="game_controller.cpp" />
@@ -166,6 +169,7 @@
     <ClCompile Include="launcher.cpp" />
     <ClCompile Include="level_builder.cpp" />
     <ClCompile Include="orbit_camera.cpp" />
+    <ClCompile Include="physics_world.cpp" />
     <ClCompile Include="projectile.cpp" />
     <ClCompile Include="trajectory_predictor.cpp" />
   </ItemGroup>

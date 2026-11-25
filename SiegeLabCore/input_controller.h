@@ -6,10 +6,27 @@
 namespace siege_lab
 {
 
+class FirePressTracker
+{
+ public:
+  bool Update(bool _pressed)
+  {
+    const bool new_press = _pressed && !m_was_pressed;
+    m_was_pressed = _pressed;
+    return new_press;
+  }
+
+ private:
+  bool m_was_pressed = false;
+};
+
 class InputController
 {
  public:
-  InputSnapshot Capture() const;
+  InputSnapshot Capture();
+
+ private:
+  FirePressTracker m_fire_press_tracker;
 };
 
 }  // namespace siege_lab

@@ -46,28 +46,39 @@ static_assert(!std::is_move_constructible_v<ObjectPool<PoolValue, 2>>);
 
 }  // namespace
 
-TEST(ObjectPoolTest, CreatesObjectsAndLooksThemUp)
+TEST(Pool, P01_CapacityLimit)
 {
-  ObjectPool<PoolValue, 2> pool;
-  const auto id = pool.Create(42);
-
-  ASSERT_TRUE(id.has_value());
-  ASSERT_NE(nullptr, pool.Get(*id));
-  EXPECT_EQ(42, pool.Get(*id)->value);
-}
-
-TEST(ObjectPoolTest, ReusesCapacityAfterDestroy)
-{
-  ObjectPool<PoolValue, 1> pool;
-  const auto first_id = pool.Create(1);
+  ObjectPool<PoolValue, 3> pool;
+  const auto first_id = pool.Create(10);
+  const auto second_id = pool.Create(20);
+  const auto third_id = pool.Create(30);
+  const auto overflow_id = pool.Create(40);
 
   ASSERT_TRUE(first_id.has_value());
-  EXPECT_FALSE(pool.Create(2).has_value());
-  ASSERT_TRUE(pool.Destroy(*first_id));
-  EXPECT_TRUE(pool.Create(3).has_value());
+  ASSERT_TRUE(second_id.has_value());
+  ASSERT_TRUE(third_id.has_value());
+  EXPECT_FALSE(overflow_id.has_value());
+  EXPECT_EQ(10, pool.Get(*first_id)->value);
+  EXPECT_EQ(20, pool.Get(*second_id)->value);
+  EXPECT_EQ(30, pool.Get(*third_id)->value);
 }
 
-TEST(ObjectPoolTest, RejectsStaleIdsAfterSlotReuse)
+TEST(Pool, P02_RecycledSlotChangesGeneration)
+{
+  ObjectPool<PoolValue, 1> pool;
+  const auto first_id = pool.Create(7);
+
+  ASSERT_TRUE(first_id.has_value());
+  ASSERT_TRUE(pool.Destroy(*first_id));
+  const auto replacement_id = pool.Create(42);
+
+  ASSERT_TRUE(replacement_id.has_value());
+  EXPECT_EQ(first_id->slot, replacement_id->slot);
+  EXPECT_NE(first_id->generation, replacement_id->generation);
+  EXPECT_NE(*first_id, *replacement_id);
+}
+
+TEST(Pool, P03_StaleHandleRejected)
 {
   ObjectPool<PoolValue, 1> pool;
   const auto old_id = pool.Create(1);
@@ -82,7 +93,7 @@ TEST(ObjectPoolTest, RejectsStaleIdsAfterSlotReuse)
   EXPECT_EQ(2, pool.Get(*new_id)->value);
 }
 
-TEST(ObjectPoolTest, KeepsAddressesStableWhenCreatingObjects)
+TEST(Pool, P04_LiveAddressStable)
 {
   ObjectPool<PoolValue, 3> pool;
   const auto first_id = pool.Create(1);
@@ -96,7 +107,7 @@ TEST(ObjectPoolTest, KeepsAddressesStableWhenCreatingObjects)
   EXPECT_EQ(first_address, pool.Get(*first_id));
 }
 
-TEST(ObjectPoolTest, IteratesLiveObjectsAndClearInvalidatesIds)
+TEST(Pool, P05_ClearInvalidatesHandles)
 {
   ObjectPool<PoolValue, 3> pool;
   const auto first_id = pool.Create(1);

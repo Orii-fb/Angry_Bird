@@ -48,14 +48,52 @@ Projectile* SpawnProjectile(
 }
 
 void UpdateWorld(
-    LevelBuilder& _level, Projectile* _projectile,
+    LevelBuilder& _level, SceneObjects<1>& _projectiles,
+    Projectile* _projectile,
     float& _accumulator, float _delta_time)
 {
   _accumulator += _delta_time;
   while (_accumulator >= kPhysicsStep)
   {
-    _level.Step(kPhysicsStep, _projectile);
+    if (!_level.Step(kPhysicsStep, _projectile))
+    {
+      TraceLog(LOG_WARNING, "Detection de collisions incomplete.");
+    }
+    _projectiles.FlushRemovals();
     _accumulator -= kPhysicsStep;
+  }
+}
+
+void FireIfPressed(
+    const InputSnapshot& _input, const ShotSettings& _shot,
+    SceneObjects<1>& _projectiles, Projectile*& _active_projectile,
+    float& _physics_accumulator);
+
+TrajectoryResult PrepareFrameTrajectory(
+    const InputSnapshot& _input, const ShotSettings& _shot,
+    TrajectoryPredictor& _predictor, const LevelBuilder& _level,
+    SceneObjects<1>& _projectiles, Projectile*& _active_projectile,
+    float& _physics_accumulator)
+{
+  const auto obstacles = _level.GetTrajectoryBoxes();
+  const TrajectoryResult trajectory = _predictor.Predict(_shot, obstacles);
+  FireIfPressed(
+      _input, _shot, _projectiles, _active_projectile, _physics_accumulator);
+  return trajectory;
+}
+
+void UpdateProjectileWorld(
+    LevelBuilder& _level, SceneObjects<1>& _projectiles,
+    Projectile*& _active_projectile, float& _physics_accumulator,
+    float _delta_time)
+{
+  UpdateWorld(
+      _level, _projectiles, _active_projectile,
+      _physics_accumulator, _delta_time);
+  if (_active_projectile != nullptr &&
+      !_projectiles.Contains(_active_projectile))
+  {
+    _active_projectile = nullptr;
   }
 }
 
@@ -144,15 +182,43 @@ void UpdateAndDrawFrame(
   _launcher.Aim(input, delta_time);
 
   const ShotSettings shot = _launcher.GetShotSettings();
-  const auto obstacles = _level.GetTrajectoryBoxes();
-  const TrajectoryResult trajectory = _predictor.Predict(shot, obstacles);
-  FireIfPressed(
-      input, shot, _projectiles, _active_projectile, _physics_accumulator);
-  UpdateWorld(
-      _level, _active_projectile, _physics_accumulator, delta_time);
+  const TrajectoryResult trajectory = PrepareFrameTrajectory(
+      input, shot, _predictor, _level, _projectiles,
+      _active_projectile, _physics_accumulator);
+  UpdateProjectileWorld(
+      _level, _projectiles, _active_projectile,
+      _physics_accumulator, delta_time);
   DrawScene(
       _camera_manager.GetCamera(), shot, _level, _active_projectile,
       trajectory);
+}
+
+bool BuildInitialLevel(LevelBuilder& _level)
+{
+  if (_level.BuildPillarCube())
+  {
+    return true;
+  }
+  TraceLog(LOG_ERROR, "Impossible de creer le niveau pilier et cube.");
+  return false;
+}
+
+void RunGameLoop(LevelBuilder& _level)
+{
+  OrbitCamera orbit_camera({2.0f, 1.5f, 0.0f}, 12.0f, 90.0f);
+  CameraManager camera_manager(orbit_camera);
+  InputController input_controller;
+  Launcher launcher;
+  TrajectoryPredictor trajectory_predictor;
+  SceneObjects<1> projectiles;
+  Projectile* active_projectile = nullptr;
+  float physics_accumulator = 0.0f;
+  while (!WindowShouldClose())
+  {
+    UpdateAndDrawFrame(
+        camera_manager, input_controller, launcher, trajectory_predictor,
+        _level, projectiles, active_projectile, physics_accumulator);
+  }
 }
 
 }  // namespace
@@ -163,29 +229,12 @@ void GameController::Run()
   SetTargetFPS(60);
 
   LevelBuilder level;
-  if (!level.BuildPillarCube())
+  if (!BuildInitialLevel(level))
   {
-    TraceLog(LOG_ERROR, "Impossible de creer le niveau pilier et cube.");
     CloseWindow();
     return;
   }
-
-  OrbitCamera orbit_camera({2.0f, 1.5f, 0.0f}, 12.0f, 90.0f);
-  CameraManager camera_manager(orbit_camera);
-  InputController input_controller;
-  Launcher launcher;
-  TrajectoryPredictor trajectory_predictor;
-  SceneObjects<1> projectiles;
-  Projectile* active_projectile = nullptr;
-  float physics_accumulator = 0.0f;
-
-  while (!WindowShouldClose())
-  {
-    UpdateAndDrawFrame(
-        camera_manager, input_controller, launcher, trajectory_predictor,
-        level, projectiles, active_projectile, physics_accumulator);
-  }
-
+  RunGameLoop(level);
   CloseWindow();
 }
 

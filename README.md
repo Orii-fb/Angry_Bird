@@ -94,3 +94,38 @@ prédiction utilise aussi une copie de leur pose et de leur forme.
 J’ai testé les dimensions et masses, leur repos sur 780 pas, puis un tir
 excentré après cette attente : le pilier tourne et le cube se sépare. Les 37
 tests passent en Debug et en Release.
+
+## Étape 8 — Monde physique Cyclone
+
+J’ai ajouté `PhysicsWorld` pour regrouper le pas de simulation au lieu de
+laisser le niveau intégrer et résoudre les collisions lui-même. Le monde
+ne possède pas les objets : il emprunte leurs corps et leurs colliders typés,
+et les blocs restent détenus par `SceneObjects`. Il peut enregistrer des
+sphères, des boîtes et des plans séparément, avancer seulement les corps
+mobiles, puis détecter et résoudre ensemble les contacts avec Cyclone.
+
+J’ai aussi remplacé l’ancien pas physique du niveau par cet orchestrateur. Le
+projectile est enregistré seulement pendant son pas, puis désinscrit avant de
+pouvoir être détruit. Si le tampon de contacts ne permet pas de vérifier toutes
+les paires, le pas le signale et le jeu affiche un avertissement. Les nouveaux
+tests couvrent les formes, le sol, les corps fixes, les contacts, la capacité
+du tampon et la désinscription. Les tests de repos et d’impact du niveau
+continuent aussi de passer. Les 47 tests passent en Debug et en Release.
+
+## Étape 9 — Événements de collision
+
+J’ai ajouté les événements `Enter` et `Exit` autour des contacts calculés par
+Cyclone. Le résolveur transmet seulement les vitesses préparées à un observateur
+léger; `PhysicsWorld` en copie les identifiants, le point de contact, la normale
+et la vitesse avant que Cyclone ne modifie les corps. Les événements sont ensuite
+envoyés après la résolution, sans conserver de pointeur vers les contacts.
+
+Une paire n’envoie un `Enter` qu’à partir de 1 m/s. Elle envoie un `Exit` après
+trois pas de contact calme ou deux pas complets sans contact; une détection
+incomplète ne compte pas comme une séparation. Les paires sont ordonnées avec
+leur génération d’identifiant, et le sol utilise un identifiant spécial sans
+corps. Les écouteurs peuvent se désabonner pendant l’envoi. J’ai aussi ajouté
+une file de suppressions : le niveau désinscrit les objets du monde avant de
+les détruire, après la résolution et l’envoi des événements. Le test du pilier
+et du cube confirme qu’ils ne produisent pas d’événements au repos prolongé.
+Les 63 tests passent en Debug et en Release.

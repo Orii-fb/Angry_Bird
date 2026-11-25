@@ -14,7 +14,7 @@ int ReadAxis(int _positive_key, int _negative_key)
 
 }  // namespace
 
-InputSnapshot InputController::Capture() const
+InputSnapshot InputController::Capture()
 {
   InputSnapshot input;
   input.orbit_button_down = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
@@ -28,7 +28,7 @@ InputSnapshot InputController::Capture() const
   input.launcher_speed_axis = ReadAxis(KEY_E, KEY_Q);
   input.standard_projectile_pressed = IsKeyPressed(KEY_ONE);
   input.heavy_projectile_pressed = IsKeyPressed(KEY_TWO);
-  input.fire_pressed = IsKeyPressed(KEY_SPACE);
+  input.fire_pressed = m_fire_press_tracker.Update(IsKeyDown(KEY_SPACE));
   return input;
 }
 

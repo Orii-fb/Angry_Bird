@@ -2,6 +2,9 @@
 <Project ToolsVersion="4.0"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClInclude Include="collision_events.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,6 +46,9 @@
     <ClInclude Include="orbit_camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="physics_world.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="projectile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,6 +60,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="collision_events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="block.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -73,6 +82,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="orbit_camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="physics_world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="projectile.cpp">
