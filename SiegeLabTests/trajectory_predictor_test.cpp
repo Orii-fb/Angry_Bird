@@ -30,7 +30,8 @@ TEST(TrajectoryPredictorTest, StopsAtFirstBoxContact)
       {-8.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, 10.0f,
       ProjectileKind::kStandard};
   const std::array<TrajectoryBox, 1> boxes{{
-      {{-6.0f, 1.0f, 0.0f}, {0.25f, 0.5f, 0.5f}, {0.0f, 0.0f, 0.0f}}}};
+      {{-6.0f, 1.0f, 0.0f}, {0.25f, 0.5f, 0.5f},
+       {0.0f, 0.0f, 0.0f, 1.0f}}}};
 
   const TrajectoryResult result = predictor.Predict(settings, boxes);
 

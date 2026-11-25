@@ -92,8 +92,9 @@ class ObstacleBody
     m_body.setInverseMass(0.0);
     m_body.setPosition(
         _snapshot.position.x, _snapshot.position.y, _snapshot.position.z);
-    m_body.setRotation(
-        _snapshot.rotation.x, _snapshot.rotation.y, _snapshot.rotation.z);
+    m_body.setOrientation(
+        _snapshot.orientation.w, _snapshot.orientation.x,
+        _snapshot.orientation.y, _snapshot.orientation.z);
     m_body.calculateDerivedData();
     m_box.body = &m_body;
     m_box.halfSize = cyclone::Vector3(

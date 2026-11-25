@@ -3,6 +3,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <type_traits>
@@ -45,6 +46,25 @@ class SceneObjects
   bool Destroy(EntityId _id)
   {
     return m_entities.Destroy(_id);
+  }
+
+  template <typename FunctionType>
+  void ForEach(FunctionType&& _function)
+  {
+    m_entities.ForEach(
+        [&_function](EntityId _id, std::unique_ptr<GameEntity>& _entity) {
+          std::invoke(_function, _id, *_entity);
+        });
+  }
+
+  template <typename FunctionType>
+  void ForEach(FunctionType&& _function) const
+  {
+    m_entities.ForEach(
+        [&_function](
+            EntityId _id, const std::unique_ptr<GameEntity>& _entity) {
+          std::invoke(_function, _id, *_entity);
+        });
   }
 
   void Clear()

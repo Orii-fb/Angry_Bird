@@ -15,7 +15,7 @@ struct TrajectoryBox
 {
   ::Vector3 position;
   ::Vector3 half_size;
-  ::Vector3 rotation;
+  ::Quaternion orientation;
 };
 
 struct TrajectoryResult

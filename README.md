@@ -80,3 +80,17 @@ obstacles de niveau, l’aperçu montre le contact avec le sol. Les quatre tests
 couvrent le contact au sol, le contact avec une boîte, la limite de calcul et
 la différence de rayon entre les projectiles. Les 34 tests passent en Debug
 et en Release.
+
+## Étape 7 — Pilier et cube
+
+J’ai construit la première cible avec deux blocs Cyclone indépendants : un
+pilier de 3 kg et un cube de 1,5 kg posés l’un sur l’autre. Ils ont leur
+collider boîte, leur inertie de cuboïde et les réglages de gravité,
+d’amortissement, de friction et de rebond prévus. La scène les affiche avec
+leur orientation physique. Au démarrage, ils restent au repos; un impact les
+réveille et le projectile interagit réellement avec les blocs et le sol. La
+prédiction utilise aussi une copie de leur pose et de leur forme.
+
+J’ai testé les dimensions et masses, leur repos sur 780 pas, puis un tir
+excentré après cette attente : le pilier tourne et le cube se sépare. Les 37
+tests passent en Debug et en Release.

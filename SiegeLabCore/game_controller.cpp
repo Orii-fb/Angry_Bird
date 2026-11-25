@@ -1,15 +1,13 @@
 #include "game_controller.h"
 
 #include <algorithm>
-#include <array>
 
-#include <cyclone/collide_fine.h>
-#include <cyclone/contacts.h>
 #include <raylib.h>
 
 #include "camera_manager.h"
 #include "input_controller.h"
 #include "launcher.h"
+#include "level_builder.h"
 #include "orbit_camera.h"
 #include "projectile.h"
 #include "scene_objects.h"
@@ -23,37 +21,6 @@ namespace
 
 constexpr float kPhysicsStep = 1.0f / 60.0f;
 constexpr float kMaximumFrameTime = 0.25f;
-
-void ResolveGroundContact(Projectile& _projectile, float _delta_time)
-{
-  std::array<cyclone::Contact, 4> contacts;
-  cyclone::CollisionData data;
-  data.contactArray = contacts.data();
-  data.friction = 0.8f;
-  data.restitution = 0.0f;
-  data.tolerance = 0.1f;
-  data.reset(static_cast<unsigned>(contacts.size()));
-
-  cyclone::CollisionPlane ground;
-  ground.direction = cyclone::Vector3(0.0f, 1.0f, 0.0f);
-  ground.offset = 0.0f;
-  cyclone::CollisionDetector::sphereAndHalfSpace(
-      _projectile.Collider(), ground, &data);
-  if (data.contactCount > 0)
-  {
-    cyclone::ContactResolver resolver(8);
-    resolver.resolveContacts(
-        contacts.data(), data.contactCount, _delta_time);
-    _projectile.RegisterPhysics();
-  }
-}
-
-void StepProjectile(Projectile& _projectile, float _delta_time)
-{
-  _projectile.Body().integrate(_delta_time);
-  _projectile.RegisterPhysics();
-  ResolveGroundContact(_projectile, _delta_time);
-}
 
 Projectile* SpawnProjectile(
     SceneObjects<1>& _projectiles, const ShotSettings& _shot)
@@ -80,18 +47,14 @@ Projectile* SpawnProjectile(
   return projectile;
 }
 
-void UpdateProjectile(
-    Projectile* _projectile, float& _accumulator, float _delta_time)
+void UpdateWorld(
+    LevelBuilder& _level, Projectile* _projectile,
+    float& _accumulator, float _delta_time)
 {
-  if (_projectile == nullptr)
-  {
-    return;
-  }
-
   _accumulator += _delta_time;
   while (_accumulator >= kPhysicsStep)
   {
-    StepProjectile(*_projectile, kPhysicsStep);
+    _level.Step(kPhysicsStep, _projectile);
     _accumulator -= kPhysicsStep;
   }
 }
@@ -135,7 +98,7 @@ void DrawTrajectory(const TrajectoryResult& _trajectory)
 
 void DrawScene(
     const Camera3D& _camera, const ShotSettings& _shot,
-    const Projectile* _projectile,
+    const LevelBuilder& _level, const Projectile* _projectile,
     const TrajectoryResult& _trajectory)
 {
   BeginDrawing();
@@ -143,6 +106,7 @@ void DrawScene(
   BeginMode3D(_camera);
   DrawGrid(20, 1.0f);
   DrawSphere(_shot.origin, 0.25f, DARKBLUE);
+  _level.Draw();
   DrawTrajectory(_trajectory);
   if (_projectile != nullptr)
   {
@@ -170,7 +134,7 @@ void FireIfPressed(
 void UpdateAndDrawFrame(
     CameraManager& _camera_manager, InputController& _input_controller,
     Launcher& _launcher, TrajectoryPredictor& _predictor,
-    SceneObjects<1>& _projectiles,
+    LevelBuilder& _level, SceneObjects<1>& _projectiles,
     Projectile*& _active_projectile, float& _physics_accumulator)
 {
   const InputSnapshot input = _input_controller.Capture();
@@ -180,13 +144,15 @@ void UpdateAndDrawFrame(
   _launcher.Aim(input, delta_time);
 
   const ShotSettings shot = _launcher.GetShotSettings();
-  const TrajectoryResult trajectory = _predictor.Predict(shot);
+  const auto obstacles = _level.GetTrajectoryBoxes();
+  const TrajectoryResult trajectory = _predictor.Predict(shot, obstacles);
   FireIfPressed(
       input, shot, _projectiles, _active_projectile, _physics_accumulator);
-  UpdateProjectile(
-      _active_projectile, _physics_accumulator, delta_time);
+  UpdateWorld(
+      _level, _active_projectile, _physics_accumulator, delta_time);
   DrawScene(
-      _camera_manager.GetCamera(), shot, _active_projectile, trajectory);
+      _camera_manager.GetCamera(), shot, _level, _active_projectile,
+      trajectory);
 }
 
 }  // namespace
@@ -195,6 +161,14 @@ void GameController::Run()
 {
   InitWindow(1280, 720, "Siege Lab");
   SetTargetFPS(60);
+
+  LevelBuilder level;
+  if (!level.BuildPillarCube())
+  {
+    TraceLog(LOG_ERROR, "Impossible de creer le niveau pilier et cube.");
+    CloseWindow();
+    return;
+  }
 
   OrbitCamera orbit_camera({2.0f, 1.5f, 0.0f}, 12.0f, 90.0f);
   CameraManager camera_manager(orbit_camera);
@@ -209,7 +183,7 @@ void GameController::Run()
   {
     UpdateAndDrawFrame(
         camera_manager, input_controller, launcher, trajectory_predictor,
-        projectiles, active_projectile, physics_accumulator);
+        level, projectiles, active_projectile, physics_accumulator);
   }
 
   CloseWindow();

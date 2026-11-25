@@ -28,5 +28,8 @@
     <ClCompile Include="trajectory_predictor_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="level_builder_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
